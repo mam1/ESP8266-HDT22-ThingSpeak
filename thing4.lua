@@ -84,7 +84,7 @@ function update()
       tt = ((9 * t / 50 + 32).."."..(9 * t / 5 % 10))
       hh = (((h - (h % 10)) / 10).."."..(h % 10))
   --display value strings on console
-      print("    temperature "..tt .. "\n    humidity " ..hh)
+      print("    temperature "..tt .. "\n    humidity " ..hh.."\n")
     end   
   --release DHT22 module
     dht22 = nil
@@ -94,8 +94,8 @@ function update()
     disp:firstPage()
       repeat
         disp:drawStr(0, 0, "HDT22 test sensor")
-        disp:drawStr(0, 20, tt)
-        disp:drawStr(0, 35, hh)
+        disp:drawStr(5, 20, "temperature "..tt.." deg F")
+        disp:drawStr(5, 35, "   humidity "..hh.." %")
         until disp:nextPage() == false
   --send values to thingspeak
     print("    send data to thingspeak")
@@ -108,8 +108,8 @@ print("\n\nHDT22 sensor / oled u8g display / write to thingspeak  - version "..v
 print("initializing oled display")
 init_i2c_display() 
 print("running update every " .. delay .. "ms")
-tmr.alarm(0, delay, 1, function() update() end )
-    
+--tmr.alarm(0, delay, 1, function() update() end )
+tmr.alarm(0, delay, 1, update)   
     
 
 
