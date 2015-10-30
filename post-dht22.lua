@@ -1,8 +1,10 @@
 version = "0.8"
 CHANNEL_API_KEY = "1Y898KJ1K8YQJTU4"
 delay = 60000
-PINS =   {4,4,2,2,4,4}
-FIELDS = {1,2,3,4,5,6}
+--PINS =   {4,4,2,2,4,4}
+--FIELDS = {1,2,3,4,5,6}
+PINS = {4,4}
+FIELDS = {3,4}
 pinptr = 1
 --get data from DHT22 sensor on <pin>
 function rdDHT22(pin)
