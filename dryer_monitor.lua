@@ -1,39 +1,19 @@
 version = "1.0.0"
 CHANNEL_API_KEY = "BNJG6HPJ3LFG2B5X"
-delay = 60000
+delay = 90000
 PIN = 7
 TEMPF = 1
 HUMIDF = 2
 
 --get data from DHT22 sensor on <pin>
--- function rdDHT22(pin)
--- 	local tmp, hmd
---     print("  reading pin 7")
---     dht22 = require("dht22_min")
--- 	--read sensor
---     dht22.read(7)
---     tmp = dht22.getTemperature()
---     hmd = dht22.getHumidity()
--- 	if tmp == nil then
---     	print("*** Error reading temperature from DHT22")
---     end
---     if hmd == nil then
---         print("*** Error reading humidity from DHT22")
---     end
--- 	--release DHT22 module
---     dht22 = nil
---     package.loaded["dht22"]=nil
--- 	return tmp, hmd 
--- end
---get data from DHT22 sensor on <pin>
 function rdDHT22(pin)
-    print(" ESP8266: reading pin ".. pin)
+    -- print(" ESP8266: reading pin ".. pin)
     --read sensor
     status, temp, humi, temp_dec, humi_dec = dht.read(pin)
     if status == dht.OK then
     -- Float firmware using this example
         temp = (temp*9)/5 + 32
-        print(" ESP8266: DHT Temperature:"..temp.."; ".."Humidity:"..humi)
+        -- print(" ESP8266: DHT Temperature:"..temp.."; ".."Humidity:"..humi)
         
     elseif status == dht.ERROR_CHECKSUM then
         print( " *** DHT Checksum error." )
@@ -48,7 +28,7 @@ end
 
 --post data <value> to ThingSpeak api key <key>, field <field>
 function post(key,field,value)
-    print("    posting pin 7 data to field "..field.." value is "..value)   
+    -- print("    posting pin 7 data to field "..field.." value is "..value)   
     connout = nil
     connout = net.createConnection(net.TCP, 0)
     connout:on("receive", function(connout, payloadout)
@@ -57,7 +37,7 @@ function post(key,field,value)
         end
     end)
     connout:on("connection", function(connout, payloadout) 
-        print ("    Posting...");       
+        -- print ("    Posting...");       
         connout:send("GET /update?api_key="
         .. key
         .. "&field"
@@ -78,20 +58,27 @@ function post(key,field,value)
     connout:connect(80,'api.thingspeak.com')
 end
 
-function update()
+function tupdate()
 	local t, h
 
     t, h = rdDHT22(PIN)
-    print("t "..t.."  h "..h.."\n")
-    print("t "..tostring(t).."  h "..tostring(h).."\n")
-
+    print("  DHT22 read -> t "..t.."  h "..h)
     print("    posting temperature "..tostring(t))
     post(CHANNEL_API_KEY,1,tostring(t))
 
+	local htimer = tmr.create()
+	htimer:register(delay/4, tmr.ALARM_SINGLE, hupdate)
+	htimer:start()
+end
 
+function hupdate()
 
-    -- print("    posting humidity "..tostring(h))
-    -- post(CHANNEL_API_KEY,2,tostring(h))
+	local t, h
+
+    t, h = rdDHT22(PIN)
+    print("  DHT22 read -> t "..t.."  h "..h)
+    print("    posting humidity "..tostring(h))
+    post(CHANNEL_API_KEY,2,tostring(h))
 
 end
 
@@ -99,11 +86,11 @@ end
 
 print("\n\n*** dryer_monitor.lua  version "..version.." ***\n")
 print("  reading pin 7  \n  posting data to ThingSpeak api key "..CHANNEL_API_KEY)
-print("  running update every " .. delay .. "ms\n")
+print("  running update every " .. delay .. "ms\n\n")
 -- tmr.alarm(0, delay, 1, update) 
 -- update()
 
 local mytimer = tmr.create()
-mytimer:register(delay, tmr.ALARM_AUTO, update)
+mytimer:register(delay, tmr.ALARM_AUTO, tupdate)
 mytimer:start()
 
